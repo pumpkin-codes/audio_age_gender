@@ -220,3 +220,4 @@ __marimo__/
 # Project-local (not for version control)
 samples/
 dumy.md
+.cursor/
