@@ -1,0 +1,8 @@
+# Load-test profile: skip ML inference, no memory cap (1000 WS soak).
+# Usage: docker compose -f docker-compose.yml -f docker-compose.load.yml up --build -d
+services:
+  voice-analytics:
+    mem_limit: 16g
+    environment:
+      - VOICE_LOAD_TEST_SKIP_INFERENCE=1
+      - VOICE_WS_PARTIAL_INTERVAL_SECONDS=2.0

@@ -1,0 +1,14 @@
+services:
+  voice-analytics:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - VOICE_INFERENCE_THREADS=4
+    mem_limit: 4g
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
