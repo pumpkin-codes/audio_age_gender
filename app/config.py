@@ -45,7 +45,7 @@ class Settings(BaseSettings):
 
     # VAD
     vad_mode: int = 2  # 0-3, higher = more aggressive
-    vad_frame_ms: int = 30
+    vad_frame_ms: int = 5000
 
 
 settings = Settings()
