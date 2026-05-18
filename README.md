@@ -462,7 +462,7 @@ These should be done in order — each unlocks the next:
 
 | Step | What | When |
 |------|------|------|
-| 1 | Fix VAD frame size bug (`vad_frame_ms=30`) | Now — VAD is currently broken |
+| 1 | -------
 | 2 | Add model warm-up dummy pass | Before any load test |
 | 3 | Add `/metrics` Prometheus endpoint | Before first production deploy |
 | 4 | Export model to ONNX, benchmark latency | ~500 concurrent calls |
