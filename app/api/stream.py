@@ -45,12 +45,7 @@ async def stream_audio(websocket: WebSocket) -> None:
             if "bytes" in message and message["bytes"]:
                 if session is None:
                     session = StreamSession(service)
-                chunk = message["bytes"]
-                # Try WAV decode; fall back to PCM s16le
-                if chunk[:4] == b"RIFF" or chunk[:4] == b"fLaC" or chunk[:3] == b"ID3":
-                    session.append_wav_bytes(chunk)
-                else:
-                    session.append_pcm16le(chunk)
+                session.append_audio_chunk(message["bytes"])
 
                 if session.should_emit_partial():
                     partial = session.analyze_buffer(final=False)

@@ -16,7 +16,7 @@ async def run(uri: str, wav_path: Path, chunk_ms: int = 200) -> None:
         await ws.send(json.dumps({"type": "config", "contact_id": "ws-smoke-test"}))
         print(await ws.recv())
 
-        # Send raw WAV in chunks (server decodes RIFF)
+        # Send WAV in chunks (server accumulates RIFF stream; PCM s16le also supported)
         chunk_size = 3200
         for i in range(0, len(data), chunk_size):
             await ws.send(data[i : i + chunk_size])

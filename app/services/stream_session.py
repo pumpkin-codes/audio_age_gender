@@ -17,6 +17,7 @@ class StreamSession:
         self._analysis = analysis_service
         self.contact_id = contact_id or str(uuid.uuid4())
         self._buffer = np.array([], dtype=np.float32)
+        self._wav_accum: bytearray | None = None
         self._last_partial_at = time.monotonic()
         self._bytes_received = 0
 
@@ -40,10 +41,47 @@ class StreamSession:
         from app.utils.audio_decode import decode_audio_bytes
 
         waveform, _ = decode_audio_bytes(chunk)
+        self._set_buffer(waveform)
+
+    def append_audio_chunk(self, chunk: bytes) -> None:
+        """
+        Accept telephony PCM (s16le) or a chunked encoded file (WAV/FLAC/MP3).
+
+        Only the first chunk of an encoded stream carries the container header;
+        later chunks must be accumulated before decode.
+        """
+        if not chunk:
+            return
+
+        if chunk[:4] in (b"RIFF", b"fLaC") or chunk[:3] == b"ID3":
+            self._wav_accum = bytearray(chunk)
+            self._sync_buffer_from_wav_accum()
+            return
+
+        if self._wav_accum is not None:
+            self._wav_accum.extend(chunk)
+            self._sync_buffer_from_wav_accum()
+            return
+
+        self.append_pcm16le(chunk)
+
+    def _set_buffer(self, waveform: np.ndarray) -> None:
         max_samples = int(settings.ws_max_buffer_seconds * settings.sample_rate)
-        self._buffer = np.concatenate([self._buffer, waveform])
+        self._buffer = waveform.astype(np.float32)
         if len(self._buffer) > max_samples:
             self._buffer = self._buffer[-max_samples:]
+
+    def _sync_buffer_from_wav_accum(self) -> None:
+        from app.exceptions import AudioDecodeError
+        from app.utils.audio_decode import decode_audio_bytes
+
+        if not self._wav_accum:
+            return
+        try:
+            waveform, _ = decode_audio_bytes(bytes(self._wav_accum))
+        except AudioDecodeError:
+            return
+        self._set_buffer(waveform)
 
     def should_emit_partial(self) -> bool:
         elapsed = time.monotonic() - self._last_partial_at
@@ -90,4 +128,5 @@ class StreamSession:
 
     def clear(self) -> None:
         self._buffer = np.array([], dtype=np.float32)
+        self._wav_accum = None
         self._bytes_received = 0
