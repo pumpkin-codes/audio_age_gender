@@ -2,6 +2,18 @@
 
 FastAPI service that takes a caller audio clip and returns estimated gender and age bracket, with a confidence score and an audio quality flag. Built for logistics/telephony where calls are noisy and wrong predictions are worse than no prediction.
 
+Steps in the production pipeline:
+1. Validate the audio clip
+2. Decode the audio clip
+3. VAD the audio clip
+4. Quality check the audio clip
+5. Inference the audio clip
+6. Confidence policy the audio clip
+7. Response the audio clip
+8. Return the response
+
+
+
 ---
 
 ## Quick start
